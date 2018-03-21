@@ -1,1 +1,29 @@
-@()
+@(booForm: Form[model.Book])(implicit request: MessagesRequestHeader)
+
+@import helper._
+
+@implicitFieldConstructor = @{ FieldConstructor(twitterBootstrapInput.f) }
+
+@main {
+
+    <h1>Add a Book</h1>
+
+    @form(routes.BookController.save()) {
+
+        <fieldset>
+
+            @inputText(booForm("title"), '_label -> "Title")
+            @inputText(booForm("price"), '_label -> "Price")
+            @inputText(booForm("author"), '_label -> "Author")
+            @CSRF.formField
+
+        </fieldset>
+
+        <div class="actions">
+            <input type="submit" value="Add this book" class="btn primary"> or
+            <a href=@routes.BookController.list() class="btn">Cancel</a>
+        </div>
+
+    }
+
+}
