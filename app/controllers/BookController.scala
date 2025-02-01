@@ -38,7 +38,7 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
       Ok(html.list(pageEmp, orderBy, filter))
     }.recover {
       case ex: TimeoutException =>
-        Logger.error("Problem found in book list process")
+        Logger("BookController").error("Problem found in book list process")
         InternalServerError(ex.getMessage)
     }
   }
@@ -49,7 +49,7 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
   def edit(id: Long): Action[AnyContent] = Action.async { implicit request =>
     booksRepo.findById(id).map(book => Ok(html.edit(id, bookForm.fill(book)))).recover {
       case ex: TimeoutException =>
-        Logger.error("Problem found in book edit process")
+        Logger("BookController").error("Problem found in book edit process")
         InternalServerError(ex.getMessage)
     }
   }
@@ -58,7 +58,7 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
     * Handle the 'edit form' submission
     */
   def update(id: Long): Action[AnyContent] = Action.async { implicit request =>
-    bookForm.bindFromRequest.fold(
+    bookForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(html.edit(id, formWithErrors))),
       book => {
         val futureBookUpdate = booksRepo.update(id, book.copy(id = Some(id)))
@@ -66,7 +66,7 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
           Home.flashing("success" -> "Book %s has been updated".format(book.title))
         }.recover {
           case ex: TimeoutException =>
-            Logger.error("Problem found in book update process")
+            Logger("BookController").error("Problem found in book update process")
             InternalServerError(ex.getMessage)
         }
       })
@@ -83,13 +83,13 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
     * Handle the 'new book form' submission.
     */
   def save: Action[AnyContent] = Action.async { implicit request =>
-    bookForm.bindFromRequest.fold(
+    bookForm.bindFromRequest().fold(
       formWithErrors => Future.successful(BadRequest(html.create(formWithErrors))),
       book => {
         val futureBookInsert = booksRepo.insert(book)
         futureBookInsert.map { result => Home.flashing("success" -> "Book %s has been created".format(book.title)) }.recover {
           case ex: TimeoutException =>
-            Logger.error("Problem found in book save process")
+            Logger("BookController").error("Problem found in book save process")
             InternalServerError(ex.getMessage)
         }
       })
@@ -102,7 +102,7 @@ class BookController @Inject()(cc: MessagesControllerComponents, booksRepo: Book
     val futureBookDel = booksRepo.delete(id)
     futureBookDel.map { result => Home.flashing("success" -> "Book has been deleted") }.recover {
       case ex: TimeoutException =>
-        Logger.error("Problem found in book delete process")
+        Logger("BookController").error("Problem found in book delete process")
         InternalServerError(ex.getMessage)
     }
   }
